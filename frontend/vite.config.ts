@@ -15,19 +15,25 @@ export default defineConfig({
     environment: 'happy-dom',
   },
   server: {
+    host: '0.0.0.0',
     port: 5173,
     proxy: {
       // Proxy API calls to the Telemetry Hub & API in dev
       '/api': {
-        target: 'http://localhost:8001',
+        target: 'http://127.0.0.1:8001',
         changeOrigin: true,
         secure: false,
       },
       '/ws': {
-        target: 'ws://localhost:8001',
+        target: 'ws://127.0.0.1:8002',
         ws: true,
         changeOrigin: true,
         secure: false,
+        configure: (proxy) => {
+          proxy.on('error', () => {
+            // Suppress benign socket resets on reload
+          });
+        },
       },
     },
   },

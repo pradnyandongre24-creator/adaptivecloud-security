@@ -23,10 +23,6 @@ export interface LiveHost {
   os_version?: string;
   region?: string;
   instance_id?: string;
-  role?: string;
-  role_description?: string;
-  recommended_attack?: string;
-  attack_label?: string;
 }
 
 interface NodeModalProps {
@@ -146,88 +142,6 @@ export default function NodeModal({ host, onClose, onInjectAnomaly, onAutoHeal }
     { step: 'Edge Baseline Verification', status: 'completed', action: 'Multi-variate signals checked against dynamic baseline model.' },
   ];
 
-  // Role & Demo Scenario Intelligence Map
-  const roleMap: Record<string, { role: string; desc: string; attack: string; label: string; pMaint: { metric: string; val: string; desc: string } }> = {
-    'aws-worker-01': {
-      role: 'Edge Ingress Gateway & Reverse Proxy',
-      desc: 'Terminates public TLS, handles CloudFront/ALB edge traffic, routes REST/gRPC traffic, and enforces WAF rate-limiting.',
-      attack: 'ddos',
-      label: 'Volumetric DDoS / SYN Flood (T1498)',
-      pMaint: {
-        metric: 'Ingress Conntrack & SoftIRQ Buffer',
-        val: isStressed ? '94.6% (Critical)' : '14.2% (Nominal)',
-        desc: 'Projects connection table exhaustion and softIRQ packet drops within 14 minutes under volumetric assault.'
-      }
-    },
-    'aws-worker-02': {
-      role: 'Compute App Server & Containers',
-      desc: 'Executes containerized workloads, business logic APIs, and asynchronous background worker queues.',
-      attack: 'cryptomining',
-      label: 'Cryptomining Daemon & CPU Hijack (T1496)',
-      pMaint: {
-        metric: 'Hypervisor vCPU Credit Exhaustion',
-        val: isStressed ? '98.8% (Depleted)' : '16.5% (Accruing)',
-        desc: 'Projects CPU thermal throttling and EC2 burst credit depletion within 8 minutes under miner load.'
-      }
-    },
-    'aws-worker-03': {
-      role: 'SSH Administrative Bastion Jumpbox',
-      desc: 'Single secure point of administrative SSH ingress into private VPC subnets with PAM authentication and auditd logging.',
-      attack: 'brute_force',
-      label: 'SSH Password Spray & Brute Force (T1110)',
-      pMaint: {
-        metric: 'PAM Authentication Lockout Contention',
-        val: isStressed ? '88 Failed Handshakes/min' : '0 Failed Handshakes/min (Secure)',
-        desc: 'Projects administrative SSH lockout and audit journal storage exhaustion within 22 minutes.'
-      }
-    },
-    'aws-worker-04': {
-      role: 'Internal VPC Microservice (Auth & Payments)',
-      desc: 'Internal cluster service communicating over private VPC subnets via gRPC and Redis cache for session tokens.',
-      attack: 'port_scan',
-      label: 'Lateral Port Scan & Reconnaissance (T1046)',
-      pMaint: {
-        metric: 'Zero-Trust Lateral Micro-Segmentation',
-        val: isStressed ? '360 Probed Sockets (Breached)' : '42 Sockets (Segmented)',
-        desc: 'Projects lateral perimeter breach spreading to adjacent database subnet within 35 minutes.'
-      }
-    },
-    'aws-worker-05': {
-      role: 'Cloud Database & EBS Volume Engine',
-      desc: 'Executes relational PostgreSQL database storage, transaction write-ahead logs (WAL), and high-IOPS EBS volume sync.',
-      attack: 'cloud_storage',
-      label: 'EBS Ransomware & Data Exfiltration (T1537 / T1486)',
-      pMaint: {
-        metric: 'Theil-Sen EBS Disk Volume Saturation',
-        val: isStressed ? '94.2% (Collapse Imminent)' : '46.2% (Healthy)',
-        desc: 'Theil-Sen regression projects complete disk volume exhaustion and encryption collapse in 11 minutes.'
-      }
-    },
-    'aws-worker-06': {
-      role: 'HA Canary Node & Golden Baseline Benchmark',
-      desc: 'Pristine reference baseline instance continuously audited for 99.99% SLA availability and differential drift detection.',
-      attack: 'canary_drift',
-      label: 'SLA Verification & Golden Baseline (Nominal Benchmark)',
-      pMaint: {
-        metric: 'High-Availability SLA Compliance',
-        val: '99.99% (Optimal Baseline)',
-        desc: 'MTBF trajectory > 90 days. Zero anomaly deviations recorded against golden cloud image.'
-      }
-    },
-  };
-
-  const currentRole = roleMap[host.id] || (host.instance_id && Object.values(roleMap).find(r => host.instance_id && host.display_label.includes(host.instance_id))) || {
-    role: host.role || (host.is_cloud ? 'AWS EC2 Cloud Node' : 'Physical Hardware Host'),
-    desc: host.role_description || 'Standard computing node operating in fleet cluster.',
-    attack: host.recommended_attack || 'ddos',
-    label: host.attack_label || 'Volumetric Network Anomaly (T1498)',
-    pMaint: {
-      metric: 'Workload Operational Health',
-      val: isStressed ? 'Critical Stress (92%)' : 'Nominal Stability (18%)',
-      desc: 'Multi-variate statistical risk model assessing resource capacity and stability.'
-    }
-  };
-
   // Predictive Maintenance calculations
   const failureRisk = Math.min(99, Math.round(
     isStressed ? 88.5 : Math.max(12.0, (host.cpu * 0.45) + ((host.disk ?? 40) * 0.35))
@@ -285,19 +199,6 @@ export default function NodeModal({ host, onClose, onInjectAnomaly, onAutoHeal }
               <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
-
-        {/* Specialized Architectural Role Banner */}
-        <div className="px-6 py-2.5 bg-blue-950/20 border-b border-blue-900/30 flex items-center justify-between text-xs flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-blue-400 flex-shrink-0" />
-            <span className="font-bold text-blue-300 font-mono uppercase text-[11px]">Role: {currentRole.role}</span>
-            <span className="text-zinc-600 hidden md:inline">&middot;</span>
-            <span className="text-zinc-400 text-[11px] hidden md:inline">{currentRole.desc}</span>
-          </div>
-          <span className="px-2 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 text-[10px] font-mono text-blue-300 font-bold">
-            Target Scenario: {currentRole.label}
-          </span>
         </div>
 
         {/* Live Gauges Bar */}
@@ -382,69 +283,36 @@ export default function NodeModal({ host, onClose, onInjectAnomaly, onAutoHeal }
           {/* TAB 1: ATTACK DETECTION & INJECTION */}
           {activeTab === 'detection' && (
             <div className="space-y-5">
-              {/* Highlighted Recommended Demo Card for this Node */}
-              <div className="bg-gradient-to-r from-zinc-900 via-zinc-900 to-blue-950/40 border border-yellow-500/40 rounded-xl p-4 shadow-xl ring-1 ring-yellow-500/20">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-yellow-400 animate-pulse" />
-                    <span className="text-xs font-bold text-yellow-300 uppercase tracking-wider font-mono">
-                      Recommended Demo Scenario for this Instance
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded">
-                    Role: {currentRole.role}
-                  </span>
-                </div>
-                <div className="mb-3">
-                  <h4 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
-                    {currentRole.label}
-                  </h4>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    {currentRole.desc} Demonstrates tailored anomaly detection, root cause causal timeline, and autonomous closed-loop healing.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <button
-                    onClick={() => handleTrigger(currentRole.attack)}
-                    disabled={loadingAction}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold text-xs shadow-md transition-all disabled:opacity-50"
-                  >
-                    <Play className="w-4 h-4 fill-black" />
-                    ⚡ Run Recommended Demo: {currentRole.label.split('(')[0].trim()}
-                  </button>
-                  <span className="text-[11px] text-zinc-400 font-mono">
-                    Target: {host.display_label.split('(')[0].trim()} ({host.ip_address})
-                  </span>
-                </div>
-              </div>
-
-              {/* Cross-Vector Anomaly Injection Suite */}
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                    <Terminal className="w-4 h-4 text-zinc-400" />
-                    Inject Any Threat Vector on this Instance
+                  <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Terminal className="w-4 h-4 text-yellow-400" />
+                    Live Anomaly Demonstration Triggers (Inject on this node)
                   </h3>
-                  <span className="text-[10px] text-zinc-500 font-mono">Instant Telemetry Departure</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">Updates Telemetry Instantly</span>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {[
-                    { type: 'ddos', label: '+ DDoS Flood (T1498)', cls: 'bg-red-500/15 border-red-500/30 text-red-400' },
-                    { type: 'cryptomining', label: '+ Crypto Miner (T1496)', cls: 'bg-pink-500/15 border-pink-500/30 text-pink-400' },
-                    { type: 'brute_force', label: '+ SSH Spray (T1110)', cls: 'bg-orange-500/15 border-orange-500/30 text-orange-400' },
-                    { type: 'port_scan', label: '+ Port Scan (T1046)', cls: 'bg-yellow-500/15 border-yellow-500/30 text-yellow-400' },
-                    { type: 'cloud_storage', label: '+ Storage Exfiltration (T1537)', cls: 'bg-purple-500/15 border-purple-500/30 text-purple-400' },
-                    { type: 'canary_drift', label: '+ Golden Drift / SLA Check', cls: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' },
-                  ].map(b => (
-                    <button
-                      key={b.type}
-                      onClick={() => handleTrigger(b.type)}
-                      disabled={loadingAction}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-125 disabled:opacity-50 ${b.cls}`}
-                    >
-                      <Play className="w-3.5 h-3.5" /> {b.label}
-                    </button>
-                  ))}
+                  <button
+                    onClick={() => handleTrigger('ddos')}
+                    disabled={loadingAction}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 text-xs font-bold transition-all disabled:opacity-50"
+                  >
+                    <Play className="w-3.5 h-3.5" /> + Inject DDoS Volumetric Flood
+                  </button>
+                  <button
+                    onClick={() => handleTrigger('cryptomining')}
+                    disabled={loadingAction}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-pink-500/15 border border-pink-500/30 text-pink-400 hover:bg-pink-500/25 text-xs font-bold transition-all disabled:opacity-50"
+                  >
+                    <Play className="w-3.5 h-3.5" /> + Inject Crypto Miner Daemon
+                  </button>
+                  <button
+                    onClick={() => handleTrigger('brute_force')}
+                    disabled={loadingAction}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-400 hover:bg-orange-500/25 text-xs font-bold transition-all disabled:opacity-50"
+                  >
+                    <Play className="w-3.5 h-3.5" /> + Inject SSH Dictionary Spray
+                  </button>
                 </div>
               </div>
 
@@ -699,24 +567,6 @@ export default function NodeModal({ host, onClose, onInjectAnomaly, onAutoHeal }
                   </p>
                   <p className="text-[10px] text-zinc-400 mt-1">AWS CloudWatch / psutil telemetry</p>
                 </div>
-              </div>
-
-              {/* Workload-Specific Predictive Metric Profile */}
-              <div className="bg-gradient-to-r from-zinc-900 to-blue-950/30 border border-blue-500/30 rounded-xl p-4 shadow-md">
-                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-blue-400" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      Role Telemetry Trajectory: {currentRole.pMaint.metric}
-                    </span>
-                  </div>
-                  <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${isStressed ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}`}>
-                    {currentRole.pMaint.val}
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-300 font-mono mt-1">
-                  {currentRole.pMaint.desc}
-                </p>
               </div>
 
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4">

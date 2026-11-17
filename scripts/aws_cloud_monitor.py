@@ -266,13 +266,12 @@ def compute_theil_sen_ebs_forecast(historical_samples: list[tuple[float, float]]
 
 def trigger_aws_incident(
     attack_type: str,
-    target_host: str = "IngressGateway-Edge (i-017c3c1add524779c)",
+    target_host: str = "AWS-PROD-WEB-01 (i-09f1a238e5b4c10aa)",
 ) -> dict[str, Any]:
     """Generates an AWS cloud security incident, runs RCA, and registers it in the Permission Gate."""
-    atk = attack_type.lower()
-    if atk in ("ddos", "dos"):
+    if attack_type == "ddos":
         features = {
-            "cpu": 88.4,
+            "cpu": 86.4,
             "ram": 74.0,
             "failed_logins": 0,
             "inbound_traffic": 98500.0,
@@ -289,13 +288,13 @@ def trigger_aws_incident(
                 "expected_outcome": "Immediate mitigation of volumetric flood at AWS edge perimeter",
             }
         ]
-    elif atk == "brute_force":
+    elif attack_type == "brute_force":
         features = {
-            "cpu": 48.0,
-            "ram": 52.0,
-            "failed_logins": 88,
-            "inbound_traffic": 240.0,
-            "active_connections": 110,
+            "cpu": 32.0,
+            "ram": 48.0,
+            "failed_logins": 78,
+            "inbound_traffic": 210.0,
+            "active_connections": 85,
         }
         recom_actions = [
             {
@@ -308,66 +307,7 @@ def trigger_aws_incident(
                 "expected_outcome": "Terminates inbound authentication dictionary spray at hypervisor",
             }
         ]
-    elif atk == "port_scan":
-        features = {
-            "cpu": 62.0,
-            "ram": 58.0,
-            "failed_logins": 0,
-            "inbound_traffic": 380.0,
-            "active_connections": 195,
-        }
-        recom_actions = [
-            {
-                "action_id": "ACT_VPC_MICROSEGMENTATION",
-                "name": "Enforce VPC Micro-segmentation & Revoke Subnet Ingress",
-                "description": "Quarantine target microservice security group to block lateral port reconnaissance",
-                "risk_level": "medium",
-                "reversible": True,
-                "rollback_steps": "Restore previous VPC security group ingress rules",
-                "expected_outcome": "Terminates lateral port sweep across internal VPC subnets",
-            }
-        ]
-    elif atk in ("cloud_storage", "ransomware", "exfiltration"):
-        features = {
-            "cpu": 84.0,
-            "ram": 86.0,
-            "failed_logins": 0,
-            "inbound_traffic": 180.0,
-            "active_connections": 32,
-            "bucket_egress_burst": True,
-            "egress_gb": 48.5,
-        }
-        recom_actions = [
-            {
-                "action_id": "ACT_AWS_EBS_SNAPSHOT_QUARANTINE",
-                "name": "Point-in-Time AWS EBS Snapshot & Volume Quarantine",
-                "description": "Create instant crash-consistent EBS snapshot and clamp volume to read-only",
-                "risk_level": "low",
-                "reversible": True,
-                "rollback_steps": "Remount volume read-write if verified benign",
-                "expected_outcome": "Preserves storage blocks; prevents unauthorized encryption and exfiltration",
-            }
-        ]
-    elif atk in ("canary_drift", "benign"):
-        features = {
-            "cpu": 12.4,
-            "ram": 34.0,
-            "failed_logins": 0,
-            "inbound_traffic": 110.0,
-            "active_connections": 14,
-        }
-        recom_actions = [
-            {
-                "action_id": "ACT_CANARY_SLA_AUDIT",
-                "name": "Verify 99.99% Canary SLA & Re-sync Amazon Time Sync",
-                "description": "Query Consul health mesh and perform sub-millisecond clock sync verification",
-                "risk_level": "low",
-                "reversible": True,
-                "rollback_steps": "None required (auditing verification only)",
-                "expected_outcome": "Confirms pristine reference baseline status for entire AWS fleet",
-            }
-        ]
-    elif atk == "cloud_iam":
+    elif attack_type == "cloud_iam":
         features = {
             "cpu": 18.0,
             "ram": 42.0,
@@ -386,13 +326,13 @@ def trigger_aws_incident(
                 "expected_outcome": "Invalidates stolen developer credentials within 200 milliseconds",
             }
         ]
-    else: # cryptomining
+    else:
         features = {
-            "cpu": 96.5,
-            "ram": 88.0,
+            "cpu": 94.0,
+            "ram": 85.0,
             "failed_logins": 0,
             "inbound_traffic": 160.0,
-            "active_connections": 45,
+            "active_connections": 35,
         }
         recom_actions = [
             {
@@ -488,7 +428,7 @@ def main() -> None:
         print(f"    - Current EBS Volume Usage : {forecast['current_usage_pct']}%")
         print(f"    - Theil-Sen Growth Rate    : +{forecast['slope_pct_per_day']}% per day")
         print(f"    - Projected 95% Exhaustion : In {forecast['days_until_exhaustion']} days (Status: {forecast['status'].upper()})")
-        print("\n[✓] AWS Status check complete.")
+        print("\n[+] AWS Status check complete.")
         return
 
     if args.simulate_attack:

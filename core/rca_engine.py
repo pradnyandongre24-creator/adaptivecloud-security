@@ -155,14 +155,6 @@ class RCAEngine:
                     f"Outbound sockets ({conn_dev['measured']:.0f} connections) maintained towards external compute pooling endpoints."
                 )
 
-        elif family_clean == "cloud_storage":
-            evidence_items.append(
-                f"EBS volume disk read/write throughput spiked to {deviations['ram']['measured']:.1f}% memory buffer saturation."
-            )
-            evidence_items.append(
-                f"Outbound cloud storage synchronization rate surged ({conn_dev['measured']:.0f} active transfer threads) consistent with automated data exfiltration or ransomware encryption."
-            )
-
         elif family_clean == "botnet":
             evidence_items.append(
                 f"active_connections established ({conn_dev['measured']:.0f}) indicating periodic C2 heartbeat / reverse shell beaconing."
@@ -391,79 +383,6 @@ class RCAEngine:
                     "subsystem": "Self-Healing Controller",
                 },
             ]
-        elif family == "port_scan":
-            conns = int(features.get("active_connections", 195))
-            return [
-                {
-                    "phase": "T+00.0s",
-                    "title": "Subnet TCP SYN Sweep Ingress",
-                    "description": f"Rapid TCP probe burst detected across consecutive destination ports ({conns} active sockets).",
-                    "severity": "critical",
-                    "subsystem": "Network Ingress (VPC Interface)",
-                },
-                {
-                    "phase": "T+01.1s",
-                    "title": "VPC Lateral Reconnaissance Pattern",
-                    "description": "Probe sweeps observed targeting internal ports 3306 (MySQL), 6379 (Redis), and 8080 (Microservices).",
-                    "severity": "warning",
-                    "subsystem": "VPC Routing Layer",
-                },
-                {
-                    "phase": "T+02.3s",
-                    "title": "Autonomous Security Group Isolation",
-                    "description": "AdaptiveCloud enforces dynamic security group quarantine and drops scanning CIDR at hypervisor.",
-                    "severity": "info",
-                    "subsystem": "Self-Healing Controller",
-                },
-            ]
-        elif family == "cloud_storage":
-            return [
-                {
-                    "phase": "T+00.0s",
-                    "title": "EBS Volume High-I/O Burst & File Renaming",
-                    "description": "Atypical surge in sustained WriteIOPS and rapid cryptographic disk modifications detected.",
-                    "severity": "critical",
-                    "subsystem": "Storage Engine / EBS Subsystem",
-                },
-                {
-                    "phase": "T+01.4s",
-                    "title": "Outbound S3 Staging & Data Exfiltration",
-                    "description": "High-velocity data stream staged for exfiltration to unauthorized external cloud endpoint.",
-                    "severity": "critical",
-                    "subsystem": "Cloud Storage Egress Gateway",
-                },
-                {
-                    "phase": "T+02.6s",
-                    "title": "Autonomous EBS Snapshot & Volume Quarantine",
-                    "description": "Point-in-time EBS snapshot generated immediately; storage write access clamped to read-only.",
-                    "severity": "info",
-                    "subsystem": "Self-Healing Controller",
-                },
-            ]
-        elif family in ("benign", "canary_drift"):
-            return [
-                {
-                    "phase": "T+00.0s",
-                    "title": "Canary Health Probe & Baseline Heartbeat",
-                    "description": f"High-availability health probe recorded on {host_id}; all metrics operating within 99.99% SLA.",
-                    "severity": "info",
-                    "subsystem": "HA Health Monitor (Consul/Prometheus)",
-                },
-                {
-                    "phase": "T+01.0s",
-                    "title": "Differential Drift Inspection",
-                    "description": "Configuration hashes, NTP clock synchronization, and TLS certificates validated against golden image.",
-                    "severity": "info",
-                    "subsystem": "Configuration Manager",
-                },
-                {
-                    "phase": "T+02.0s",
-                    "title": "Zero Anomaly Confirmation",
-                    "description": "System state verified nominal; baseline control statistics maintained for fleet comparative analysis.",
-                    "severity": "info",
-                    "subsystem": "Self-Healing Controller",
-                },
-            ]
         else:
             return [
                 {
@@ -589,111 +508,6 @@ class RCAEngine:
                     "verification": "Confirm zero new failed login entries in the last 5 minutes.",
                 },
             ]
-        elif family == "port_scan":
-            return [
-                {
-                    "step_number": 1,
-                    "title": "Quarantine Compromised VPC Security Group",
-                    "category": "AWS VPC Isolation",
-                    "command": "aws ec2 update-security-group-rule-descriptions-ingress --group-id sg-04micro --security-group-rule-descriptions '[{\"SecurityGroupRuleId\": \"sgr-01a\", \"Description\": \"Quarantined: Internal Recon\"}]'",
-                    "explanation": "Enforces strict micro-segmentation, cutting off lateral reconnaissance paths across adjacent subnets.",
-                    "verification": "aws ec2 describe-security-groups --group-ids sg-04micro",
-                },
-                {
-                    "step_number": 2,
-                    "title": "Drop Scanning Probes on Host Network Stack",
-                    "category": "Host Firewall",
-                    "command": f"sudo iptables -I INPUT -p tcp --tcp-flags SYN,ACK,FIN,RST SYN -m limit --limit 5/s -j ACCEPT && sudo iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP",
-                    "explanation": "Rate limits incoming SYN handshakes and completely drops null/stealth port scan probes.",
-                    "verification": "sudo iptables -L INPUT -v -n",
-                },
-                {
-                    "step_number": 3,
-                    "title": "Rotate IAM Microservice Instance Profile Session Token",
-                    "category": "IAM Governance",
-                    "command": "aws iam put-role-policy --role-name MicroserviceClusterRole --policy-name RevokeTempTokens --policy-document '{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"*\",\"Resource\":\"*\"}]}'",
-                    "explanation": "Invalidates stolen metadata credentials to prevent adversary accessing internal cloud resources.",
-                    "verification": "aws sts get-caller-identity",
-                },
-                {
-                    "step_number": 4,
-                    "title": "Run Local Socket Audit to Verify Perimeter Integrity",
-                    "category": "Verification",
-                    "command": "sudo ss -tlpn | grep -E ':(3306|6379|8080|22)'",
-                    "explanation": "Ensures no unexpected background listening daemons were bound during the reconnaissance window.",
-                    "verification": "Confirm only legitimate microservice binaries are listening.",
-                },
-            ]
-        elif family == "cloud_storage":
-            return [
-                {
-                    "step_number": 1,
-                    "title": "Create Point-in-Time Crash-Consistent EBS Snapshot",
-                    "category": "Data Preservation",
-                    "command": "aws ec2 create-snapshot --volume-id vol-0a12fstorage --description 'Automated Forensic Snapshot - Storage Engine Incident' --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Purpose,Value=ForensicPreservation}]'",
-                    "explanation": "Immediately preserves complete volume state before any malicious encryption or exfiltration alters data.",
-                    "verification": "aws ec2 describe-snapshots --snapshot-ids $(aws ec2 describe-snapshots --query 'Snapshots[-1].SnapshotId' --output text)",
-                },
-                {
-                    "step_number": 2,
-                    "title": "Kill Rogue Encryption & Bulk Exfiltration Processes",
-                    "category": "Process Quarantine",
-                    "command": "sudo pkill -9 -f 'ransom|encryptor|s3_bulk_exfil' || sudo kill -9 $(pgrep -f 'data_dump')",
-                    "explanation": "Halts active disk write encryption threads and kills outbound cloud staging pipes.",
-                    "verification": "pgrep -f 'encryptor' || echo 'Clean: Rogue storage processes terminated'",
-                },
-                {
-                    "step_number": 3,
-                    "title": "Enforce Read-Only Filesystem & S3 Egress Clamp",
-                    "category": "Storage Protection",
-                    "command": "sudo mount -o remount,ro /var/lib/postgresql/data && aws s3api put-bucket-policy --bucket adaptivecloud-storage-vault --policy '{\"Statement\":[{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::adaptivecloud-storage-vault/*\"}]}'",
-                    "explanation": "Remounts database data partition read-only and locks the cloud bucket to block exfiltration.",
-                    "verification": "touch /var/lib/postgresql/data/test && echo 'Error: Read-only file system' || echo 'Protected'",
-                },
-                {
-                    "step_number": 4,
-                    "title": "Database WAL & Hash Integrity Verification",
-                    "category": "Integrity Audit",
-                    "command": "sudo -u postgres pg_controldata /var/lib/postgresql/data | grep 'Database cluster state'",
-                    "explanation": "Validates PostgreSQL write-ahead log consistency and ensures database blocks are uncorrupted.",
-                    "verification": "Confirm output reports 'Database cluster state: in production' or 'shut down'.",
-                },
-            ]
-        elif family in ("canary_drift", "benign"):
-            return [
-                {
-                    "step_number": 1,
-                    "title": "Verify High-Availability Canary Heartbeat",
-                    "category": "SLA Benchmark",
-                    "command": "curl -s -o /dev/null -w 'Canary Health Status: %{http_code} | Latency: %{time_total}s\\n' http://localhost:8500/v1/health/service/canary",
-                    "explanation": "Queries local Consul service mesh health endpoint to confirm nominal canary baseline.",
-                    "verification": "Expect 'Canary Health Status: 200 | Latency: 0.003s'.",
-                },
-                {
-                    "step_number": 2,
-                    "title": "Synchronize System Time with Amazon Time Sync Service",
-                    "category": "Clock Drift Audit",
-                    "command": "chronyc tracking && sudo chronyc makestep",
-                    "explanation": "Validates that host clock drift is strictly < 0.5 milliseconds against AWS GPS stratum reference.",
-                    "verification": "chronyc sources -v",
-                },
-                {
-                    "step_number": 3,
-                    "title": "Audit TLS/SSL X.509 Certificate Expiration Windows",
-                    "category": "Certificate Audit",
-                    "command": "openssl x509 -enddate -noout -in /etc/ssl/certs/ca-certificates.crt 2>/dev/null || echo 'Certificates valid > 180 days'",
-                    "explanation": "Ensures all TLS endpoints and mTLS tokens have > 90 days validity before renewal.",
-                    "verification": "Confirm certificate validity exceeds 90 days.",
-                },
-                {
-                    "step_number": 4,
-                    "title": "Audit 99.99% Availability & MTBF Trajectory",
-                    "category": "Governance",
-                    "command": "uptime && echo 'SLA Compliance: 99.99% | Zero Anomaly Deviations Recorded'",
-                    "explanation": "Validates system uptime and records confirmation that the golden baseline node is fully nominal.",
-                    "verification": "Confirm zero active alert flags.",
-                },
-            ]
         else: # generic / web / benign
             return [
                 {
@@ -738,29 +552,6 @@ class RCAEngine:
                 {"step": "Dynamic Inbound Ban Deployed", "status": "completed", "action": "Offending source IP blocked on host firewall and AWS Security Group."},
                 {"step": "Target Account Lock & Alert", "status": "completed", "action": "Account temporarily locked for 15 minutes to prevent dictionary compromise."},
                 {"step": "Security Perimeter Verified", "status": "completed", "action": "Failed logins drop to zero; zero unauthorized sessions established."},
-            ]
-        elif family == "port_scan":
-            return [
-                {"step": "Rapid SYN Probe Sweep Flagged", "status": "completed", "action": f"Port scan signature identified across 100+ ports on {host_id}."},
-                {"step": "Tactical Micro-Segmentation Applied", "status": "completed", "action": "VPC Security Group updated to revoke unauthorized ingress CIDR."},
-                {"step": "Host SYN Drop Filter Engaged", "status": "completed", "action": "Stealth and NULL scan packet flags dropped at kernel level."},
-                {"step": "IAM Session Tokens Rotated", "status": "completed", "action": "Microservice IAM temporary credentials rotated within 240ms."},
-                {"step": "Lateral Recon Neutralized", "status": "completed", "action": "Internal network socket turnover restored to nominal baseline."},
-            ]
-        elif family == "cloud_storage":
-            return [
-                {"step": "EBS Storage Write Anomaly Detected", "status": "completed", "action": f"Abnormal sustained disk write throughput flagged on {host_id}."},
-                {"step": "Emergency Snapshot Preservation", "status": "completed", "action": "Point-in-time AWS EBS crash-consistent snapshot triggered immediately."},
-                {"step": "Rogue Process Termination", "status": "completed", "action": "High-IOPS encryption and cloud staging processes terminated via SIGKILL."},
-                {"step": "Storage Volume Lockdown", "status": "completed", "action": "Filesystem remounted in read-only mode; S3 outbound PutObject clamped."},
-                {"step": "Data Integrity Confirmed", "status": "completed", "action": "PostgreSQL database WAL integrity and file hashes verified intact."},
-            ]
-        elif family in ("canary_drift", "benign"):
-            return [
-                {"step": "Golden Baseline Telemetry Polled", "status": "completed", "action": f"Telemetry verified within 99.99% SLA confidence bounds on {host_id}."},
-                {"step": "Consul Service Mesh Health Check", "status": "completed", "action": "Canary endpoint returned HTTP 200 OK (latency: 3ms)."},
-                {"step": "NTP Clock & Certificate Audit", "status": "completed", "action": "Amazon Time Sync drift strictly <0.2ms; TLS certificates verified valid >180 days."},
-                {"step": "Reference Baseline Maintained", "status": "completed", "action": "Host confirmed in pristine nominal state for differential fleet comparison."},
             ]
         else:
             return [

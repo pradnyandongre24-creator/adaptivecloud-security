@@ -142,25 +142,8 @@ class IncidentStore:
             query += " AND source = ?"
             params.append(source.lower())
         if host_id:
-            patterns = [f"%{host_id}%", host_id]
-            if "aws-worker-01" in host_id or "i-017c3c1add524779c" in host_id:
-                patterns.extend(["%AdaptiveCloud-Worker-01%", "%i-017c3c1add524779c%", "%IngressGateway%"])
-            elif "aws-worker-02" in host_id or "i-062792c1aed63a040" in host_id:
-                patterns.extend(["%AdaptiveCloud-Worker-02%", "%i-062792c1aed63a040%", "%AppServer%"])
-            elif "aws-worker-03" in host_id or "i-0b486412d8078ec4b" in host_id:
-                patterns.extend(["%AdaptiveCloud-Worker-03%", "%i-0b486412d8078ec4b%", "%BastionHost%"])
-            elif "aws-worker-04" in host_id or "i-0293219dcfcc1f414" in host_id:
-                patterns.extend(["%AdaptiveCloud-Worker-04%", "%i-0293219dcfcc1f414%", "%Microservice%"])
-            elif "aws-worker-05" in host_id or "i-0a70f7c7afdcbed3a" in host_id:
-                patterns.extend(["%AdaptiveCloud-Worker-05%", "%i-0a70f7c7afdcbed3a%", "%StorageEngine%"])
-            elif "aws-worker-06" in host_id or "i-02867c8160a8e5363" in host_id:
-                patterns.extend(["%AdaptiveCloud-Worker-06%", "%i-02867c8160a8e5363%", "%HACanary%"])
-            elif "laptop-01" in host_id or "local" in host_id.lower():
-                patterns.extend(["%Local Host%", "%Omhwk%"])
-
-            sub_clauses = " OR ".join(["host_id LIKE ?" for _ in patterns])
-            query += f" AND ({sub_clauses})"
-            params.extend(patterns)
+            query += " AND (host_id LIKE ? OR host_id = ?)"
+            params.extend([f"%{host_id}%", host_id])
 
         query += " ORDER BY created_epoch DESC LIMIT ?"
         params.append(limit)

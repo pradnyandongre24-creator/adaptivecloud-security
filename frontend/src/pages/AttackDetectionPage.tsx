@@ -109,31 +109,20 @@ function HostCard({ host, onSelect }: { host: LiveHost; onSelect: (h: LiveHost) 
           {host.is_cloud ? <Cloud className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
         </div>
         <div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             <p className="text-xs font-semibold text-white leading-none group-hover:text-blue-300 transition-colors flex items-center gap-1">
               {host.display_label}
               <ArrowUpRight className="w-3 h-3 text-zinc-600 group-hover:text-blue-400 transition-colors" />
             </p>
-            {host.role && (
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 text-blue-300 font-bold">
-                {host.role.split('(')[0].trim()}
-              </span>
-            )}
             {isStressed && (
               <span className="text-[9px] font-bold font-mono px-1.5 py-0.5 rounded bg-red-500 text-black uppercase animate-pulse">
                 ATTACK ACTIVE
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1 font-mono">
-            <span>{host.ip_address}</span>
-            {host.region && <span className="text-zinc-600">&middot; {host.region}</span>}
-            {host.recommended_attack && (
-              <span className="text-yellow-400/90 bg-yellow-500/10 px-1.5 py-0.2 rounded text-[9px] font-bold">
-                ⚡ Demo: {host.recommended_attack.toUpperCase()}
-              </span>
-            )}
-          </div>
+          <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">{host.ip_address}
+            {host.region && <span className="text-zinc-600"> · {host.region}</span>}
+          </p>
         </div>
       </div>
       <div className="flex items-center gap-5 text-right">

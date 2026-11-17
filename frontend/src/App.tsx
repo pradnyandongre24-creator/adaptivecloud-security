@@ -9,7 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 // 4 core pages
 import LoginPage from '@/pages/LoginPage';
 import AttackDetectionPage from '@/pages/AttackDetectionPage';
-import RCAPage from '@/pages/RCAPage';
+import RcaPage from '@/pages/RcaPage';
 import SelfHealingPage from '@/pages/SelfHealingPage';
 import PredictiveMaintenancePage from '@/pages/PredictiveMaintenancePage';
 
@@ -43,7 +43,7 @@ export default function App() {
             }
           >
             <Route path="/" element={<AttackDetectionPage />} />
-            <Route path="/rca" element={<RCAPage />} />
+            <Route path="/rca" element={<RcaPage />} />
             <Route path="/healing" element={<SelfHealingPage />} />
             <Route path="/maintenance" element={<PredictiveMaintenancePage />} />
             {/* Legacy redirects */}

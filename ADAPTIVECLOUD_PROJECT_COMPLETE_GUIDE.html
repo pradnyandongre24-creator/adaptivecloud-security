@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdaptiveCloud: Complete Architectural & Technical Reference Guide</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #fafafa;
+    }
+    .container {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 1px solid #eaeaea;
+    }
+    h1 { color: #0f172a; border-bottom: 2px solid #0284c7; padding-bottom: 12px; font-size: 28px; }
+    h2 { color: #0369a1; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-top: 36px; font-size: 20px; }
+    h3 { color: #0f172a; margin-top: 24px; font-size: 16px; }
+    h4 { color: #334155; margin-top: 18px; font-size: 14px; }
+    p, li { color: #334155; font-size: 14px; }
+    code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 13px;
+      color: #0f172a;
+    }
+    pre {
+      background: #09090b;
+      color: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: "Consolas", monospace;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 10px 14px;
+      text-align: left;
+    }
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 600;
+    }
+    tr:nth-child(even) { background: #fdfdfd; }
+    blockquote {
+      border-left: 4px solid #0284c7;
+      margin: 16px 0;
+      padding: 8px 16px;
+      background: #f0f9ff;
+      color: #0369a1;
+      font-style: italic;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+    .print-btn {
+      float: right;
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .print-btn:hover { background: #0369a1; }
+    @media print {
+      .print-btn { display: none; }
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; border: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <h1>AdaptiveCloud: Complete Architectural & Technical Reference Guide</h1>
+    <p><em>An enterprise-grade, full-stack autonomous cloud resilience, root cause analysis (RCA), and predictive hardware failure platform. Aligned with MITRE ATT&CK, the UNSW-NB15 intrusion dataset, and Amazon Web Services (AWS) infrastructure.</em></p>
+
+    <h2>1. Executive Summary & Problem Statement</h2>
+    <h3>The Problem in Modern Cloud Computing</h3>
+    <p>In distributed cloud environments and hybrid data centers, two major operational silos create catastrophic downtime:</p>
+    <ul>
+      <li><strong>The Cyber Defense Silo (SIEM / SOC):</strong> Volumetric cyberattacks (DDoS floods, credential stuffing, cryptominers) propagate in <strong>milliseconds</strong> (&lt;500ms). Traditional SOC teams manually correlate alerts, causing the average Mean Time to Detect (MTTD) to exceed 16 days.</li>
+      <li><strong>The Hardware Health Silo (DevOps / SRE):</strong> Cyberattacks inflict severe <strong>physical hardware wear</strong>:
+        <ul>
+          <li>Volumetric packet floods cause Linux kernel <strong>SoftIRQ starvation</strong> and NIC socket exhaustion.</li>
+          <li>Cryptomining daemons peg CPU cores at 100%, causing thermal throttling and silicon electromigration.</li>
+          <li>Rapid brute-force logging causes disk I/O thrashing and rapid EBS storage saturation.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>The Solution: AdaptiveCloud</h3>
+    <p>AdaptiveCloud bridges these two silos into a single closed-loop control plane:</p>
+    <ul>
+      <li><strong>Two-Tier ML Threat Classification:</strong> Evaluates telemetry in &lt;5ms to detect canonical attack families and specific MITRE ATT&CK techniques.</li>
+      <li><strong>Forensic Root Cause Analysis (RCA):** Reconstructs millisecond propagation timelines ($T+00.0\text{s} \rightarrow T+03.9\text{s}$) and calculates multi-deviation baseline shifts.</li>
+      <li><strong>Autonomous Self-Healing:</strong> Neutralizes threats in &lt;400ms with zero-human latency while maintaining safety guardrail vetoes.</li>
+      <li><strong>Predictive Maintenance:</strong> Uses <strong>Theil-Sen robust regression</strong> to calculate Time-to-Failure (TTF) and correlates cyber strain with physical degradation.</li>
+    </ul>
+
+    <h2>2. The 4 Core Platform Pillars</h2>
+
+    <h3>Pillar 1: Two-Tier Threat Detection & Classification (/)</h3>
+    <p>Evaluates a 5-dimensional behavioral telemetry vector:</p>
+    <ol>
+      <li><code>cpu</code>: CPU Core Utilization Percentage (0–100%).</li>
+      <li><code>ram</code>: Resident Memory Allocation Percentage (0–100%).</li>
+      <li><code>failed_logins</code>: Authentication failure rate.</li>
+      <li><code>inbound_traffic</code>: Incoming packet/bandwidth velocity (packets/second).</li>
+      <li><code>active_connections</code>: Sockets in ESTABLISHED or SYN_RECV states.</li>
+    </ol>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Machine Learning Model</th>
+          <th>F1-Macro Score</th>
+          <th>Accuracy</th>
+          <th>Inference Latency</th>
+          <th>Selected Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>XGBoost</strong></td>
+          <td><strong>0.9994</strong></td>
+          <td><strong>99.94%</strong></td>
+          <td>0.0012 ms</td>
+          <td><span class="badge">Production Champion</span></td>
+        </tr>
+        <tr>
+          <td>Decision Tree</td>
+          <td>0.9991</td>
+          <td>99.90%</td>
+          <td>0.0007 ms</td>
+          <td>Low-Power Embedded Edge</td>
+        </tr>
+        <tr>
+          <td>Random Forest</td>
+          <td>0.9984</td>
+          <td>99.82%</td>
+          <td>0.0045 ms</td>
+          <td>Multi-Class Fallback</td>
+        </tr>
+        <tr>
+          <td>SVM (RBF Kernel)</td>
+          <td>0.9740</td>
+          <td>97.10%</td>
+          <td>0.0820 ms</td>
+          <td>Baseline Benchmark</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Pillar 2: Root Cause Analysis (RCA) Engine (/rca)</h3>
+    <p>Synthesizes four diagnostic elements:</p>
+    <ul>
+      <li><strong>Evidence-Grounded Hypotheses:</strong> Generates probabilistic hypotheses linked directly to quantified telemetry shifts.</li>
+      <li><strong>Multi-Factor Deviations:</strong> Calculates deviation ratios against baseline normal operations (e.g. Inbound traffic 783.3x deviation).</li>
+      <li><strong>Millisecond Causal Timeline:</strong> Reconstructs propagation from T+00.0s (network ingress) to T+01.5s (socket exhaustion) and T+03.9s (service disruption).</li>
+      <li><strong>Differential Diagnosis:</strong> Rules out routine tasks like scheduled cron backup jobs.</li>
+    </ul>
+
+    <h3>Pillar 3: Autonomous Self-Healing & Governance (/healing)</h3>
+    <p>Executes a 5-stage automated remediation runbook:</p>
+    <ol>
+      <li>Telemetry Threshold Triggered</li>
+      <li>Two-Tier ML Inference (&lt;5ms)</li>
+      <li>Edge Rate-Limit Rule Applied (AWS WAFv2 / Perimeter Firewall)</li>
+      <li>Host Socket Backlog Throttling & TCP SYN Cookie Tuning</li>
+      <li>Post-Healing Verification Normalization Probe</li>
+    </ol>
+    <blockquote>
+      <strong>Safety Guardrail Veto Authority:</strong> Critical system processes (systemd, sshd, lsass.exe) and gateway IP addresses can NEVER be terminated or blocked by automated playbooks.
+    </blockquote>
+
+    <h3>Pillar 4: Predictive Maintenance & Hardware Degradation (/maintenance)</h3>
+    <p>Uses the <strong>Theil-Sen Robust Regression Estimator</strong> to eliminate false alarms from transient network spikes:</p>
+    <pre>Slope = Median( (y_j - y_i) / (t_j - t_i) ) for all i &lt; j</pre>
+    <ul>
+      <li>Calculates pairwise slopes across all timestamps.</li>
+      <li>Takes the median slope, giving a breakdown point of 29.3% against outliers.</li>
+      <li>Forecasts exact <strong>Time-to-Failure (TTF)</strong> for EBS Volume Storage Depletion and Out-Of-Memory (OOM) crashes.</li>
+    </ul>
+
+    <h2>3. Live AWS Cloud Infrastructure</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Live Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Live Public Dashboard</strong></td>
+          <td><a href="http://3.108.250.115:5173" target="_blank">http://3.108.250.115:5173</a></td>
+          <td>Hosted on AWS EC2 in Mumbai (ap-south-1)</td>
+        </tr>
+        <tr>
+          <td><strong>Instance ID</strong></td>
+          <td><code>i-017c3c1add524779c</code></td>
+          <td>Primary live attack target & healing host</td>
+        </tr>
+        <tr>
+          <td><strong>Public IPv4</strong></td>
+          <td><code>3.108.250.115</code></td>
+          <td>Direct public elastic endpoint</td>
+        </tr>
+        <tr>
+          <td><strong>Private IPv4</strong></td>
+          <td><code>172.31.6.242</code></td>
+          <td>Internal VPC Subnet IP</td>
+        </tr>
+        <tr>
+          <td><strong>AWS Region</strong></td>
+          <td><code>ap-south-1</code> (Mumbai, India)</td>
+          <td>AWS Asia Pacific Zone</td>
+        </tr>
+        <tr>
+          <td><strong>IAM User</strong></td>
+          <td><code>omhiwrakar</code> (Acct: <code>172017435160</code>)</td>
+          <td>Authorized AWS Administrator Identity</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. 4-Step Viva / Demo Presentation Script</h2>
+    <ol>
+      <li><strong>Step 1 (Fleet Overview):</strong> Open <code>http://3.108.250.115:5173</code>. Explain that the platform monitors a hybrid fleet of physical workstations and live AWS EC2 cloud instances.</li>
+      <li><strong>Step 2 (Simulate Attack):</strong> Click <code>+ DDoS Flood</code>. Show how the Two-Tier classifier detects the anomaly in &lt;200ms and maps it to MITRE ATT&CK T1498.001.</li>
+      <li><strong>Step 3 (Forensic RCA):</strong> Open <code>/rca</code>. Show the causal propagation timeline and multi-factor sigma deviations.</li>
+      <li><strong>Step 4 (Auto-Heal & Maintenance):</strong> Click <code>Auto-Heal Now</code>. Show the AWS WAF / iptables runbook executing in sub-seconds and open <code>/maintenance</code> to showcase Theil-Sen Time-to-Failure forecasting.</li>
+    </ol>
+  </div>
+</body>
+</html>
